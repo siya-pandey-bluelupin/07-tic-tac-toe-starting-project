@@ -4,7 +4,6 @@ import Player from "./components/Player";
 import Log from "./components/Log";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 import GameOver from "./components/GameOver";
-import SelectGame from "./components/SelectGame";
 
 const PLAYERS = {
   X: "Player 1",
@@ -58,7 +57,7 @@ function App() {
   const [players, setPlayers] = useState(PLAYERS);
   const [gameTurns, setGameTurns] = useState([]);
   const [mode,setMode]=useState(null);
-const [showChoice,setShowChoice]=useState(false);
+const [showChoice,setShowChoice]=useState(true);
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
 
@@ -98,14 +97,15 @@ const [showChoice,setShowChoice]=useState(false);
     setMode('2Player')
     console.log('2PLayer');
   }
-useEffect(() => {
-  setShowChoice(true);
-})
+
 
   return (
     <main>
       <div id="game-container">
-       {/* {showChoice && <SelectGame onSelectAi={()=>setShowChoice(false)} onSelect2Player={handlePlayWithPlayer}/>} */}
+       {showChoice &&  <div id="game-over" style={{gap:50}}>
+    <button onClick={()=>{setShowChoice(false);setMode('AI')}}>Play with AI</button>
+    <button onClick={()=>setShowChoice(false)}>Play with Player 2</button>
+  </div>}
         <ol id="players" className="highlight-player">
           <Player
             initialName={PLAYERS.X}
