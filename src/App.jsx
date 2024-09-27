@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GameBoard from "./components/GameBoard";
 import Player from "./components/Player";
 import Log from "./components/Log";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 import GameOver from "./components/GameOver";
+import SelectGame from "./components/SelectGame";
 
 const PLAYERS = {
   X: "Player 1",
@@ -32,7 +33,7 @@ function deriveGameBoard(gameTurns) {
   }
   return gameBoard;
 }
-function deriveWinner( gameBoard, players ) {
+function deriveWinner(gameBoard, players) {
   let winner = null;
 
   for (const combination of WINNING_COMBINATIONS) {
@@ -53,10 +54,11 @@ function deriveWinner( gameBoard, players ) {
   return winner;
 }
 
-
 function App() {
   const [players, setPlayers] = useState(PLAYERS);
   const [gameTurns, setGameTurns] = useState([]);
+  const [mode,setMode]=useState(null);
+const [showChoice,setShowChoice]=useState(false);
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
 
@@ -87,9 +89,23 @@ function App() {
   function handleRestart() {
     setGameTurns([]);
   }
+  function handlePlayWithAI(){
+    setMode('AI');
+    console.log('ai');
+    
+  }
+  function handlePlayWithPlayer(){
+    setMode('2Player')
+    console.log('2PLayer');
+  }
+useEffect(() => {
+  setShowChoice(true);
+})
+
   return (
     <main>
       <div id="game-container">
+       {/* {showChoice && <SelectGame onSelectAi={()=>setShowChoice(false)} onSelect2Player={handlePlayWithPlayer}/>} */}
         <ol id="players" className="highlight-player">
           <Player
             initialName={PLAYERS.X}
@@ -102,7 +118,6 @@ function App() {
             symbol="O"
             isActive={activePlayer === "O"}
             onChangeName={handlePlayerNameChange}
-
           />
         </ol>
         {(winner || hasDraw) && (
