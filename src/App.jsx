@@ -4,6 +4,7 @@ import Player from "./components/Player";
 import Log from "./components/Log";
 import { WINNING_COMBINATIONS } from "./winning-combinations";
 import GameOver from "./components/GameOver";
+import { getAIMove } from "./utils/ai";
 
 const PLAYERS = {
   X: "Player 1",
@@ -15,11 +16,12 @@ const INITIAL_GAME_BOARD = [
   [null, null, null],
 ];
 function deriveActivePlayer(gameTurns) {
-  let currentPlayer = "X";
-  if (gameTurns.length > 0 && gameTurns[0].player === "X") {
-    currentPlayer = "O";
-  }
-  return currentPlayer;
+  // let currentPlayer = "X";
+  // if (gameTurns.length > 0 && gameTurns[0].player === "X") {
+  //   currentPlayer = "O";
+  // }
+  // return currentPlayer;
+  return gameTurns.length % 2 === 0 ? "X" : "O";
 }
 
 function deriveGameBoard(gameTurns) {
@@ -56,8 +58,8 @@ function deriveWinner(gameBoard, players) {
 function App() {
   const [players, setPlayers] = useState(PLAYERS);
   const [gameTurns, setGameTurns] = useState([]);
-  const [mode,setMode]=useState(null);
-const [showChoice,setShowChoice]=useState(true);
+  const [mode, setMode] = useState(null);
+  const [showChoice, setShowChoice] = useState(true);
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
 
@@ -71,42 +73,79 @@ const [showChoice,setShowChoice]=useState(true);
       };
     });
   }
+  // const handleSelectSquare = (rowIndex, colIndex) => {
+  //   if (winner || hasDraw ||gameBoard[rowIndex][colIndex]!==null) return;
+    
+  //   setGameTurns((prevTurns) => {
+  //     const currentPlayer = deriveActivePlayer(prevTurns);
+  //     const updatedTurns = [
+  //       {
+  //         square: { row: rowIndex, col: colIndex },
+  //         player: currentPlayer,
+  //       },
+  //       ...prevTurns,
+  //     ];
+  //     if (mode === "AI" && currentPlayer === "X") {
+  //       const aiMove = getAIMove(deriveGameBoard(updatedTurns));
+  //       if (aiMove) {
+  //         updatedTurns.push({ square: aiMove, player: "O" });
+  //       }
+  //     }
+  //     return updatedTurns;
+  //   });
+  // };
   const handleSelectSquare = (rowIndex, colIndex) => {
+    if (winner || hasDraw || gameBoard[rowIndex][colIndex] !== null) return;
+
     setGameTurns((prevTurns) => {
-      const currentPlayer = deriveActivePlayer(prevTurns);
       const updatedTurns = [
-        {
-          square: { row: rowIndex, col: colIndex },
-          player: currentPlayer,
-        },
         ...prevTurns,
+        { square: { row: rowIndex, col: colIndex }, player: "X" },
       ];
+
+      if (mode === "AI") {
+        setTimeout(() => {
+          const aiMove = getAIMove(deriveGameBoard(updatedTurns));
+          if (aiMove) {
+            setGameTurns((turns) => [
+              ...turns,
+              { square: aiMove, player: "O" },
+            ]);
+          }
+        }, 1000); // AI waits for 1 second before making a move
+      }
+
       return updatedTurns;
     });
   };
 
+
   function handleRestart() {
     setGameTurns([]);
+    setShowChoice(true);
   }
-  function handlePlayWithAI(){
-    setMode('AI');
-    console.log('ai');
-    
-  }
-  function handlePlayWithPlayer(){
-    setMode('2Player')
-    console.log('2PLayer');
-  }
-
+  const handleSelectMode = (selectedMode) => {
+    setMode(selectedMode);
+    setShowChoice(false);
+  };
 
   return (
     <main>
-      <div id="game-container">
-       {showChoice &&  <div id="game-over" style={{gap:50}}>
-    <button onClick={()=>{setShowChoice(false);setMode('AI')}}>Play with AI</button>
-    <button onClick={()=>setShowChoice(false)}>Play with Player 2</button>
-  </div>}
-        <ol id="players" className="highlight-player">
+      
+        {showChoice && (
+          <div id="game-over" style={{ gap: 50 }}>
+            <button onClick={() => handleSelectMode("AI")}>Play with AI</button>
+            <button onClick={() => handleSelectMode("2P")}>
+              Play with Player 2
+            </button>
+          </div>
+        )}
+
+        {!showChoice && (
+
+          <>
+          <div id="game-container">
+           <ol id="players" className="highlight-player">
           <Player
             initialName={PLAYERS.X}
             symbol="X"
@@ -124,8 +163,12 @@ const [showChoice,setShowChoice]=useState(true);
           <GameOver winner={winner} onRestart={handleRestart} />
         )}
         <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard} />{" "}
-      </div>{" "}
+     
       <Log turns={gameTurns} />
+      </div>{" "}
+          </>
+        )}
+      
     </main>
   );
 }
